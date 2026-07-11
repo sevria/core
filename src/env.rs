@@ -4,6 +4,12 @@ use envconfig::Envconfig;
 
 #[derive(Envconfig)]
 pub struct Env {
+    #[envconfig(from = "HTTP_ADDRESS", default = "0.0.0.0:3000")]
+    pub http_address: String,
+
+    #[envconfig(from = "HTTP_SERVER_URL", default = "/")]
+    pub http_server_url: String,
+
     #[envconfig(from = "CARGO_PKG_NAME")]
     pub service_name: String,
 

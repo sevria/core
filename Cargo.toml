@@ -1,0 +1,18 @@
+[package]
+name = "sevria-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/sevria/core"
+homepage = "https://github.com/sevria/core"
+description = "Foundational traits, types and utilities for our Rust ecosystem."
+
+[dependencies]
+anyhow = "1.0.103"
+dotenvy = "0.15.7"
+env_logger = "0.11.11"
+envconfig = "0.11.1"
+garde = "0.23.0"
+serde = { version = "1.0.228", features = ["derive"] }
+thiserror = "2.0.18"

@@ -1,46 +1,129 @@
+use mola::MolaSchema;
 use serde::Serialize;
 
-use crate::Error;
+// ---------------------------------------------------------------------------
+// Success response — carries data and optional meta, no error
+// ---------------------------------------------------------------------------
 
 #[derive(Serialize)]
-pub struct Response<T: Serialize> {
+pub struct Response<D: Serialize, M: Serialize> {
     pub success: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<T>,
+    pub data: Option<D>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
+    pub meta: Option<M>,
 }
 
-pub struct ResponseBuilder<T: Serialize>(Response<T>);
+impl<D: Serialize + MolaSchema, M: Serialize + MolaSchema> MolaSchema for Response<D, M> {
+    fn description() -> &'static str {
+        "Success response"
+    }
 
-impl<T: Serialize> ResponseBuilder<T> {
-    pub fn new() -> Self {
-        Self(Response {
-            success: true,
-            data: None,
-            error: None,
+    fn json_schema() -> serde_json::Value {
+        let mut props = serde_json::Map::new();
+        props.insert("success".into(), serde_json::json!({"type": "boolean"}));
+        props.insert("data".into(), D::json_schema());
+        props.insert("meta".into(), M::json_schema());
+        serde_json::json!({
+            "type": "object",
+            "properties": props,
+            "required": ["success"]
         })
     }
+}
 
-    pub fn success(mut self, success: bool) -> Self {
-        self.0.success = success;
-        self
+// ---------------------------------------------------------------------------
+// Error response — carries error and optional meta, no data
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize)]
+pub struct ErrorResponse<M: Serialize> {
+    pub success: bool,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<Error>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meta: Option<M>,
+}
+
+impl<M: Serialize + MolaSchema> MolaSchema for ErrorResponse<M> {
+    fn description() -> &'static str {
+        "Error response"
     }
 
-    pub fn data(mut self, data: T) -> Self {
-        self.0.data = Some(data);
-        self
+    fn json_schema() -> serde_json::Value {
+        let mut props = serde_json::Map::new();
+        props.insert("success".into(), serde_json::json!({"type": "boolean"}));
+        props.insert("error".into(), Error::json_schema());
+        props.insert("meta".into(), M::json_schema());
+        serde_json::json!({
+            "type": "object",
+            "properties": props,
+            "required": ["success"]
+        })
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Error payload
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize)]
+pub struct Error {
+    pub code: String,
+    pub message: String,
+
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub details: Vec<ErrorDetail>,
+}
+
+impl MolaSchema for Error {
+    fn description() -> &'static str {
+        "Error details"
     }
 
-    pub fn error(mut self, error: Error) -> Self {
-        self.0.success = false;
-        self.0.error = Some(error.to_string());
-        self
+    fn json_schema() -> serde_json::Value {
+        serde_json::json!({
+            "type": "object",
+            "properties": {
+                "code": {"type": "string"},
+                "message": {"type": "string"},
+                "details": {
+                    "type": "array",
+                    "items": ErrorDetail::json_schema()
+                }
+            },
+            "required": ["code", "message"]
+        })
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Error detail
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize)]
+pub struct ErrorDetail {
+    pub field: String,
+    pub reason: String,
+}
+
+impl MolaSchema for ErrorDetail {
+    fn description() -> &'static str {
+        "Error detail"
     }
 
-    pub fn build(self) -> Response<T> {
-        self.0
+    fn json_schema() -> serde_json::Value {
+        serde_json::json!({
+            "type": "object",
+            "properties": {
+                "field": {"type": "string"},
+                "reason": {"type": "string"}
+            },
+            "required": ["field", "reason"]
+        })
     }
 }

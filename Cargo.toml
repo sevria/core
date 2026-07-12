@@ -1,6 +1,6 @@
 [package]
 name = "sevria-core"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -14,7 +14,7 @@ dotenvy = "0.15.7"
 env_logger = "0.11.11"
 envconfig = "0.11.1"
 garde = "0.23.0"
-mola = "0.1.4"
+mola = "0.1.5"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 thiserror = "2.0.18"

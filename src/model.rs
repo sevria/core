@@ -56,7 +56,10 @@ impl<M: Serialize + MolaSchema> MolaSchema for ErrorResponse<M> {
 
     fn json_schema() -> serde_json::Value {
         let mut props = serde_json::Map::new();
-        props.insert("success".into(), serde_json::json!({"type": "boolean"}));
+        props.insert(
+            "success".into(),
+            serde_json::json!({"type": "boolean", "example": false}),
+        );
         props.insert("error".into(), Error::json_schema());
         props.insert("meta".into(), M::json_schema());
         serde_json::json!({
